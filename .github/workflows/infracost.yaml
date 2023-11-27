@@ -1,0 +1,85 @@
+name: Infracost-Workflow
+on:
+  pull_request:  
+    branches:
+      - main
+  push: 
+    branches:
+      - main
+jobs:
+  infracost:
+    runs-on: ubuntu-latest
+    env:
+      working-directory: ./
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}          
+    permissions:
+      contents: read
+      # Required to post comments
+      pull-requests: write
+
+    name: Run Infracost
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Install terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_wrapper: false
+
+      - name: Terraform init
+        run: terraform init
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        working-directory: ${{ env.working-directory }}
+
+      - name: Terraform plan
+        run: terraform plan -out tf.plan
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}        
+        working-directory: ${{ env.working-directory }}
+
+      - name: Terraform show
+        run: terraform show -json tf.plan > plan.json
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        working-directory: ${{ env.working-directory }}
+
+      - name: Setup Infracost
+        uses: infracost/actions/setup@v1
+        with:
+          #api-key: ${{ secrets.INFRACOST_API_KEY }}
+          api-key: ${{ secrets.INFRA_COST }}
+
+
+      # - name: Generate Infracost JSON
+      #   run: infracost breakdown --path plan.json --format json --out-file /tmp/infracost.json
+      #   working-directory: ${{ env.working-directory }}
+
+      # Generate Infracost JSON file as the baseline.
+      - name: Generate Infracost cost estimate baseline
+        run: |
+          infracost breakdown --path=plan.json \
+                              --format=json \
+                              --out-file=/tmp/infracost-base.json
+        # continue-on-error: true
+
+      - name: Generate Infracost diff
+        run: |
+          infracost diff  --path=plan.json \
+                          --format=json \
+                          --compare-to=/tmp/infracost-base.json \
+                          --out-file=/tmp/infracost.json
+        # continue-on-error: true                          
+
+      - name: Post Infracost comment
+        run: |
+          infracost comment github --path=/tmp/infracost.json \
+                                   --repo=$GITHUB_REPOSITORY \
+                                   --github-token=${{ github.token }} \
+                                   --pull-request=${{ github.event.pull_request.number }} \
+                                   --behavior=new
