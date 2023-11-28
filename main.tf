@@ -1,36 +1,27 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 4.16"
+    }
+  }
+  required_version = ">= 1.2.0"
+  backend "s3" {
+    bucket         	   = "aws-budgets-bucket"
+    key              	 = "statefile"
+    region         	   = "ap-south-1"
+  }
+}
+
 provider "aws" {
-  region                      = "us-east-1" # <<<<< Try changing this to eu-west-1 to compare the costs
-  skip_credentials_validation = true
-  skip_requesting_account_id  = true
-  access_key                  = ""
-  secret_key                  = ""
+  region  = "us-west-2"
 }
 
-resource "aws_instance" "web_app" {
-  ami           = "ami-674cbc1e"
-  instance_type = "m5.4xlarge" # <<<<< Try changing this to m5.8xlarge to compare the costs
+resource "aws_instance" "web_server" {
+  ami           = "ami-04e914639d0cca79a"
+  instance_type = "t2.medium"
 
-  root_block_device {
-    volume_size = 50
+  tags = {
+    Name = "testinginfracost"
   }
-
-  ebs_block_device {
-    device_name = "my_data"
-    volume_type = "io1" # <<<<< Try changing this to gp2 to compare costs
-    volume_size = 1000
-    iops        = 800
-  }
-}
-
-resource "aws_lambda_function" "hello_world" {
-  function_name = "hello_world"
-  role          = "arn:aws:lambda:us-east-1:aws:resource-id"
-  handler       = "exports.test"
-  runtime       = "nodejs12.x"
-  filename      = "function.zip"
-  memory_size   = 1024 # <<<<< Try changing this to 512 to compare costs
-}
-
-output "aws_instance_type" {
-  value = aws_instance.web_app.instance_type
 }
