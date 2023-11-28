@@ -9,7 +9,7 @@ terraform {
   backend "s3" {
     bucket         	   = "aws-budgets-bucket"
     key              	 = "statefile"
-    region         	   = "ap-south-1"
+    region         	   = "us-east-1"
   }
 }
 
