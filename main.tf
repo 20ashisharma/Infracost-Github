@@ -2,8 +2,8 @@ provider "aws" {
   region                      = "us-east-1" # <<<<< Try changing this to eu-west-1 to compare the costs
   skip_credentials_validation = true
   skip_requesting_account_id  = true
-  access_key                  = "AKIA2KN3ZKUCLIZPFS6L"
-  secret_key                  = "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"
+  access_key                  = ""
+  secret_key                  = ""
 }
 
 resource "aws_instance" "web_app" {
