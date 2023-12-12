@@ -25,6 +25,15 @@ resource "aws_instance" "web_server" {
     Name = "testinginfracost"
   }
 }
+resource "aws_instance" "database_server" {
+  ami           = "ami-04e914639d0cca79a"
+  instance_type = "t3a.medium"
+
+  tags = {
+    Name = "testinginfracost"
+  }
+}
+
 resource "aws_lambda_function" "hello_world" {
   function_name = "hello_world"
   role          = "arn:aws:lambda:us-east-1:aws:resource-id"
