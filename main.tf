@@ -6,11 +6,6 @@ terraform {
     }
   }
   required_version = ">= 1.2.0"
-  backend "s3" {
-    bucket         	   = "aws-budgets-bucket"
-    key              	 = "statefile"
-    region         	   = "us-east-1"
-  }
 }
 
 provider "aws" {
