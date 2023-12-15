@@ -36,6 +36,22 @@ resource "aws_instance" "test_server" {
     Name = "testinginfracost"
   }
 }
+resource "aws_instance" "Github_server" {
+  ami           = "ami-04e914639d0cca79a"
+  instance_type = "t3a.medium"
+
+  tags = {
+    Name = "testinginfracost"
+  }
+}
+resource "aws_instance" "demo_server" {
+  ami           = "ami-04e914639d0cca79a"
+  instance_type = "t3a.medium"
+
+  tags = {
+    Name = "testinginfracost"
+  }
+}
 resource "aws_lambda_function" "hello_world" {
   function_name = "hello_world"
   role          = "arn:aws:lambda:us-east-1:aws:resource-id"
